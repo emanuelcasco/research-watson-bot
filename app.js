@@ -52,10 +52,14 @@ app.post('/api/message', function(req, res) {
     input: req.body.input || {}
   };
 
+
   // Send the input to the conversation service
   conversation.message(payload, function(err, data) {
     if (err) {
       return res.status(err.code || 500).json(err);
+    }
+    if (data.intents[0]) {
+      data.context.context = data.intents[0].intent;
     }
     return res.json(updateMessage(payload, data));
   });
@@ -74,7 +78,9 @@ function updateMessage(input, response) {
   } else {
     return response;
   }
+
   if (response.intents && response.intents[0]) {
+    console.log(response, response.intents);
     var intent = response.intents[0];
     // Depending on the confidence of the response the app can return different messages.
     // The confidence will vary depending on how well the system is trained. The service will always try to assign
@@ -90,6 +96,9 @@ function updateMessage(input, response) {
     }
   }
   response.output.text = responseText;
+
+  console.log(response);
+
   return response;
 }
 
